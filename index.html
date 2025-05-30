@@ -13,7 +13,7 @@
   .current-turn.p1 { color: #007bff; }
   .current-turn.p2 { color: #28a745; }
   .game-area { flex: 1 1 auto; display: flex; justify-content: center; align-items: center; position: relative; }
-  .grid { display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); aspect-ratio: 1; width: 90vw; max-width: 600px; z-index: 1; }
+  .grid { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); aspect-ratio: 1; width: 90vw; max-width: 600px; z-index: 1; }
   .cell { border: 1px solid #adb5bd; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; position: relative; }
   .header-cell { background-color: #f1f3f5; border: 1px solid #adb5bd; }
   .header-cell img { width: 60%; height: 60%; object-fit: contain; }
@@ -81,8 +81,8 @@
 <script>
 const gridEl = document.getElementById('grid');
 const overlay = document.getElementById('overlay');
-const size = 9;
-const gameState = Array.from({ length: 8 }, () => Array(8).fill(null));
+const size = 8;
+const gameState = Array.from({ length: 7 }, () => Array(7).fill(null));
 let currentPlayer = 'p1';
 let p1Count = 0;
 let p2Count = 0;
@@ -103,7 +103,7 @@ function initializeCrests() {
 
   // Determine random number of national teams between 0 and 3
   const numNTs = Math.floor(Math.random() * 3);
-  const firstRow = shuffledNTs.slice(0, numNTs).concat(shuffledClubs.slice(0, 8 - numNTs));
+  const firstRow = shuffledNTs.slice(0, numNTs).concat(shuffledClubs.slice(0, 7 - numNTs));
 
   // Shuffle the order of the first row
   rowCrests = firstRow.sort(() => 0.5 - Math.random());
@@ -111,7 +111,7 @@ function initializeCrests() {
   // Columns: only clubs
   const usedCrests = new Set(rowCrests);
   const shuffledClubsForCols = shuffledClubs.filter(c => !usedCrests.has(c)).sort(() => 0.5 - Math.random());
-  colCrests = shuffledClubsForCols.slice(0, 8);
+  colCrests = shuffledClubsForCols.slice(0, 7);
 }
 
 initializeCrests();
