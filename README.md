@@ -8,9 +8,9 @@ A fun and strategic web app game that blends football club/national team knowled
 
 ## 🎮 Game Overview
 
-- **Board**: A 9x9 grid:
+- **Board**: A 8x8 grid:
   - **Top row** and **left column**: Football club and national team crests.
-  - **8x8 grid**: Where players make their moves.
+  - **7x7 grid**: Where players make their moves.
 
 - **Objective**: Players take turns guessing **players who have played for the club (column) and national team or club (row)** at the intersection.  
 - **Win Condition**:  

@@ -9,6 +9,26 @@
   html, body { height: 100%; margin: 0; }
   body { display: flex; flex-direction: column; }
   .container-fluid { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .d-flex-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #current-turn {
+    flex: 1 1 100%;
+    text-align: left;
+    order: 0;
+    margin: 0.5rem 0;
+  }
+  @media (min-width: 768px) {
+    #current-turn {
+      flex: 0 0 auto;
+      order: 0;
+      margin: 0;
+      text-align: center;
+    }
+  }
   .current-turn { text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
   .current-turn.p1 { color: #007bff; }
   .current-turn.p2 { color: #28a745; }
