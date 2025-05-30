@@ -90,24 +90,28 @@ let timerInterval;
 const timers = { p1: 30 * 60, p2: 30 * 60 };
 const crestPath = 'Club_Crests/';
 
-const allCrests = [
-  'Ajax.svg', 'Argentina.svg', 'Arsenal.svg', 'Atalanta.svg', 'Barca.svg',
-  'Bayern.svg', 'Belgium.svg', 'Bologna.svg', 'Brazil.svg', 'Cagliari.svg',
-  'Chelsea.svg', 'England.svg', 'Fiorentina.svg', 'France.svg', 'Genoa.svg',
-  'Germany.svg', 'Hellas.svg', 'Inter.svg', 'Italy.svg', 'Juventus.svg',
-  'Lazio.svg', 'Liverpool.svg', 'Man_Utd.svg', 'Milan.svg', 'Napoli.svg',
-  'Netherlands.svg', 'Parma.svg', 'Porto.svg', 'Portugal.svg', 'Real_Madrid.svg',
-  'Roma.svg', 'Sampdoria.svg', 'Spain.svg', 'Torino.svg', 'Udinese.svg', 'Uruguay.svg'
-];
+const clubs = ['Ajax.svg', 'Arsenal.svg', 'Atalanta.svg', 'Barca.svg', 'Bayern.svg', 'Bologna.svg', 'Cagliari.svg', 'Chelsea.svg', 'Fiorentina.svg', 'Genoa.svg', 'Hellas.svg', 'Inter.svg', 'Juventus.svg', 'Lazio.svg', 'Liverpool.svg', 'Man_Utd.svg', 'Milan.svg', 'Napoli.svg', 'Parma.svg', 'Porto.svg', 'Real_Madrid.svg', 'Roma.svg', 'Sampdoria.svg', 'Torino.svg', 'Udinese.svg'];
+const nationalTeams = ['Argentina.svg', 'Belgium.svg', 'Brazil.svg', 'England.svg', 'France.svg', 'Germany.svg', 'Italy.svg', 'Netherlands.svg', 'Portugal.svg', 'Spain.svg', 'Uruguay.svg'];
+const allCrests = [...clubs, ...nationalTeams];
 
 let rowCrests = [];
 let colCrests = [];
 
 function initializeCrests() {
-  const shuffled = [...allCrests].sort(() => 0.5 - Math.random());
-  rowCrests = shuffled.slice(0, 8);
-  const remaining = shuffled.slice(8);
-  colCrests = remaining.slice(0, 8);
+  const shuffledClubs = [...clubs].sort(() => 0.5 - Math.random());
+  const shuffledNTs = [...nationalTeams].sort(() => 0.5 - Math.random());
+
+  // Determine random number of national teams between 0 and 3
+  const numNTs = Math.floor(Math.random() * 3);
+  const firstRow = shuffledNTs.slice(0, numNTs).concat(shuffledClubs.slice(0, 8 - numNTs));
+
+  // Shuffle the order of the first row
+  rowCrests = firstRow.sort(() => 0.5 - Math.random());
+
+  // Columns: only clubs
+  const usedCrests = new Set(rowCrests);
+  const shuffledClubsForCols = shuffledClubs.filter(c => !usedCrests.has(c)).sort(() => 0.5 - Math.random());
+  colCrests = shuffledClubsForCols.slice(0, 8);
 }
 
 initializeCrests();
@@ -195,7 +199,6 @@ document.getElementById('no-player-btn').addEventListener('click', () => {
 document.getElementById('cancel-btn').addEventListener('click', () => {
   if (selectedCell) selectedCell.classList.remove('selected');
   selectedCell = null;
-  // Switch turn to opponent
   currentPlayer = currentPlayer === 'p1' ? 'p2' : 'p1';
   updateActivePlayer();
   stopTimer();
@@ -280,5 +283,6 @@ function showWinner(player) {
   overlay.style.display = 'flex';
 }
 </script>
+
 </body>
 </html>
