@@ -6,144 +6,35 @@
 <title>Football Chess</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-  body {
-    display: flex;
-    flex-direction: column;
-  }
-  .container-fluid {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-  }
-  .game-area {
-    flex: 1 1 auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    grid-template-rows: repeat(9, 1fr);
-    aspect-ratio: 1;
-    width: 90vw;
-    max-width: 600px;
-    z-index: 1;
-  }
-  .cell {
-    border: 1px solid #adb5bd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    position: relative;
-  }
-  .header-cell {
-    background-color: #f1f3f5;
-    border: 1px solid #adb5bd;
-  }
-  .header-cell img {
-    width: 60%;
-    height: 60%;
-    object-fit: contain;
-  }
-  .playable.p1 {
-    background-color: rgba(0, 123, 255, 0.3);
-  }
-  .playable.p2 {
-    background-color: rgba(40, 167, 69, 0.3);
-  }
-  .selected {
-    background-color: #adb5bd !important;
-  }
-  .locked.p1 {
-    background-color: rgba(0, 123, 255, 0.3) !important;
-    color: #004085;
-  }
-  .locked.p2 {
-    background-color: rgba(40, 167, 69, 0.3) !important;
-    color: #155724;
-  }
-  .locked.empty {
-    background-color: rgba(108, 117, 125, 0.3) !important;
-    color: #6c757d;
-  }
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin-left: 1rem;
-  }
-  .action-buttons button {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 1rem;
-  }
-  .player-header {
-    border: 2px solid #ced4da;
-    border-radius: 0.5rem;
-    padding: 0.3rem 0.5rem;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100px;
-    position: relative;
-  }
-  .player-header.p1 {
-    background-color: rgba(0, 123, 255, 0.1);
-    border-color: #007bff;
-  }
-  .player-header.p2 {
-    background-color: rgba(40, 167, 69, 0.1);
-    border-color: #28a745;
-  }
-  .player-header.active {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  }
-  .player-header-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-  .player-header .btn {
-    position: absolute;
-    bottom: 5px;
-  }
-  #start-p1, #start-p2 {
-    left: 5px;
-  }
-  #stop-p1, #stop-p2 {
-    right: 5px;
-  }
-  #start-p1.active, #start-p2.active {
-    border: 2px solid #ffc107;
-  }
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,0.8);
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #000;
-    display: none;
-  }
+  html, body { height: 100%; margin: 0; }
+  body { display: flex; flex-direction: column; }
+  .container-fluid { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .current-turn { text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
+  .current-turn.p1 { color: #007bff; }
+  .current-turn.p2 { color: #28a745; }
+  .game-area { flex: 1 1 auto; display: flex; justify-content: center; align-items: center; position: relative; }
+  .grid { display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); aspect-ratio: 1; width: 90vw; max-width: 600px; z-index: 1; }
+  .cell { border: 1px solid #adb5bd; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; position: relative; }
+  .header-cell { background-color: #f1f3f5; border: 1px solid #adb5bd; }
+  .header-cell img { width: 60%; height: 60%; object-fit: contain; }
+  .playable.p1 { background-color: rgba(0, 123, 255, 0.3); }
+  .playable.p2 { background-color: rgba(40, 167, 69, 0.3); }
+  .selected { background-color: #adb5bd !important; }
+  .locked.p1 { background-color: rgba(0, 123, 255, 0.3) !important; color: #004085; }
+  .locked.p2 { background-color: rgba(40, 167, 69, 0.3) !important; color: #155724; }
+  .locked.empty { background-color: rgba(108, 117, 125, 0.3) !important; color: #6c757d; }
+  .action-buttons { display: flex; flex-direction: column; justify-content: center; margin-left: 1rem; }
+  .action-buttons button { width: 50px; height: 50px; margin-bottom: 1rem; }
+  .player-header { border: 2px solid #ced4da; border-radius: 0.5rem; padding: 0.3rem 0.5rem; min-width: 200px; display: flex; flex-direction: column; justify-content: space-between; height: 100px; position: relative; }
+  .player-header.p1 { background-color: rgba(0, 123, 255, 0.1); border-color: #007bff; }
+  .player-header.p2 { background-color: rgba(40, 167, 69, 0.1); border-color: #28a745; }
+  .player-header.active { box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); }
+  .player-header-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 0.9rem; }
+  .player-header .btn { position: absolute; bottom: 5px; }
+  #start-p1, #start-p2 { left: 5px; }
+  #stop-p1, #stop-p2 { right: 5px; }
+  #start-p1.active, #start-p2.active { border: 2px solid #ffc107; }
+  .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #000; display: none; }
 </style>
 </head>
 <body class="bg-light">
@@ -159,6 +50,7 @@
       <button id="start-p1" class="btn btn-primary btn-sm">Start</button>
       <button id="stop-p1" class="btn btn-secondary btn-sm">Stop</button>
     </div>
+    <div id="current-turn" class="current-turn p1">Current turn: Player 1 (Blue)</div>
     <div id="player2-header" class="player-header p2 text-end">
       <div class="player-header-content">
         <strong>Player 2 (Green)</strong>
@@ -303,6 +195,10 @@ document.getElementById('no-player-btn').addEventListener('click', () => {
 document.getElementById('cancel-btn').addEventListener('click', () => {
   if (selectedCell) selectedCell.classList.remove('selected');
   selectedCell = null;
+  // Switch turn to opponent
+  currentPlayer = currentPlayer === 'p1' ? 'p2' : 'p1';
+  updateActivePlayer();
+  stopTimer();
 });
 
 function startTimer(player) {
@@ -328,6 +224,10 @@ function stopTimer() {
 function updateActivePlayer() {
   document.getElementById('player1-header').classList.toggle('active', currentPlayer === 'p1');
   document.getElementById('player2-header').classList.toggle('active', currentPlayer === 'p2');
+  const turnEl = document.getElementById('current-turn');
+  turnEl.classList.toggle('p1', currentPlayer === 'p1');
+  turnEl.classList.toggle('p2', currentPlayer === 'p2');
+  turnEl.textContent = `Current turn: ${currentPlayer === 'p1' ? 'Player 1 (Blue)' : 'Player 2 (Green)'}`;
 }
 
 function updateTimers() {
