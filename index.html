@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Football Chess</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  .container-fluid {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .game-area {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    aspect-ratio: 1;
+    width: 90vw;
+    max-width: 600px;
+    z-index: 1;
+  }
+  .cell {
+    border: 1px solid #adb5bd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+  }
+  .header-cell {
+    background-color: #f1f3f5;
+    border: 1px solid #adb5bd;
+  }
+  .header-cell img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+  }
+  .playable.p1 {
+    background-color: rgba(0, 123, 255, 0.3);
+  }
+  .playable.p2 {
+    background-color: rgba(40, 167, 69, 0.3);
+  }
+  .selected {
+    background-color: #adb5bd !important;
+  }
+  .locked.p1 {
+    background-color: rgba(0, 123, 255, 0.3) !important;
+    color: #004085;
+  }
+  .locked.p2 {
+    background-color: rgba(40, 167, 69, 0.3) !important;
+    color: #155724;
+  }
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 1rem;
+  }
+  .action-buttons button {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 1rem;
+  }
+  .player-header {
+    border: 2px solid #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100px;
+    position: relative;
+    background-color: rgba(0, 123, 255, 0.1);
+  }
+  .player-header.p1 {
+    border-color: #007bff;
+  }
+  .player-header.p2 {
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+  .player-header.active {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+  .player-header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+  .player-header .btn {
+    position: absolute;
+    bottom: 5px;
+  }
+  #start-p1, #start-p2 {
+    left: 5px;
+  }
+  #stop-p1, #stop-p2 {
+    right: 5px;
+  }
+  #start-p1.active, #start-p2.active {
+    border: 2px solid #ffc107;
+  }
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #000;
+    display: none;
+  }
+</style>
+</head>
+<body class="bg-light">
+
+<div class="container-fluid py-2">
+  <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+    <div id="player1-header" class="player-header p1">
+      <div class="player-header-content">
+        <strong>Player 1 (Blue)</strong>
+        <div>Occupied: <span id="p1-count">0</span></div>
+        <div>Time: <span id="p1-timer">30:00</span></div>
+      </div>
+      <button id="start-p1" class="btn btn-primary btn-sm">Start</button>
+      <button id="stop-p1" class="btn btn-secondary btn-sm">Stop</button>
+    </div>
+    <div id="player2-header" class="player-header p2 text-end">
+      <div class="player-header-content">
+        <strong>Player 2 (Green)</strong>
+        <div>Occupied: <span id="p2-count">0</span></div>
+        <div>Time: <span id="p2-timer">30:00</span></div>
+      </div>
+      <button id="start-p2" class="btn btn-primary btn-sm">Start</button>
+      <button id="stop-p2" class="btn btn-secondary btn-sm">Stop</button>
+    </div>
+  </div>
+
+  <div class="game-area">
+    <div class="grid" id="grid"></div>
+    <div class="action-buttons">
+      <button id="confirm-btn" class="btn btn-success">&#10003;</button>
+      <button id="cancel-btn" class="btn btn-danger">&#10005;</button>
+    </div>
+    <div class="overlay" id="overlay"></div>
+  </div>
+
+  <div class="text-center my-2">
+    <button id="reset-btn" class="btn btn-danger">Reset</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const gridEl = document.getElementById('grid');
+const overlay = document.getElementById('overlay');
+const size = 9;
+const gameState = Array.from({ length: 8 }, () => Array(8).fill(null));
+let currentPlayer = 'p1';
+let p1Count = 0;
+let p2Count = 0;
+let timerInterval;
+const timers = { p1: 30 * 60, p2: 30 * 60 };
+const crestPath = 'Club_Crests/';
+
+const allCrests = [
+  'Ajax.svg', 'Argentina.svg', 'Arsenal.svg', 'Atalanta.svg', 'Barca.svg',
+  'Bayern.svg', 'Belgium.svg', 'Bologna.svg', 'Brazil.svg', 'Cagliari.svg',
+  'Chelsea.svg', 'England.svg', 'Fiorentina.svg', 'France.svg', 'Genoa.svg',
+  'Germany.svg', 'Hellas.svg', 'Inter.svg', 'Italy.svg', 'Juventus.svg',
+  'Lazio.svg', 'Liverpool.svg', 'Man_Utd.svg', 'Milan.svg', 'Napoli.svg',
+  'Netherlands.svg', 'Parma.svg', 'Porto.svg', 'Portugal.svg', 'Real_Madrid.svg',
+  'Roma.svg', 'Sampdoria.svg', 'Spain.svg', 'Torino.svg', 'Udinese.svg', 'Uruguay.svg'
+];
+
+let rowCrests = [];
+let colCrests = [];
+
+function initializeCrests() {
+  const shuffled = [...allCrests].sort(() => 0.5 - Math.random());
+  rowCrests = shuffled.slice(0, 8);
+  const remaining = shuffled.slice(8);
+  colCrests = remaining.slice(0, 8);
+}
+
+initializeCrests();
+
+function buildGrid() {
+  gridEl.innerHTML = '';
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+
+      if (row === 0 && col === 0) {
+        cell.classList.add('header-cell');
+      } else if (row === 0 && col > 0) {
+        cell.classList.add('header-cell');
+        const img = document.createElement('img');
+        img.src = `${crestPath}${colCrests[col - 1]}`;
+        cell.appendChild(img);
+      } else if (col === 0 && row > 0) {
+        cell.classList.add('header-cell');
+        const img = document.createElement('img');
+        img.src = `${crestPath}${rowCrests[row - 1]}`;
+        cell.appendChild(img);
+      } else {
+        cell.classList.add('playable', 'bg-white');
+        cell.dataset.row = row - 1;
+        cell.dataset.col = col - 1;
+        cell.addEventListener('click', () => handleSelection(cell));
+      }
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+buildGrid();
+
+let selectedCell = null;
+
+function handleSelection(cell) {
+  if (cell.classList.contains('locked')) return;
+  if (selectedCell) selectedCell.classList.remove('selected');
+  selectedCell = cell;
+  cell.classList.add('selected');
+}
+
+document.getElementById('confirm-btn').addEventListener('click', () => {
+  if (!selectedCell) return;
+  const row = parseInt(selectedCell.dataset.row);
+  const col = parseInt(selectedCell.dataset.col);
+
+  gameState[row][col] = currentPlayer;
+  selectedCell.classList.add(currentPlayer, 'locked');
+  selectedCell.classList.remove('selected');
+  selectedCell.textContent = currentPlayer.toUpperCase();
+
+  if (currentPlayer === 'p1') {
+    p1Count++;
+    document.getElementById('p1-count').textContent = p1Count;
+  } else {
+    p2Count++;
+    document.getElementById('p2-count').textContent = p2Count;
+  }
+
+  if (checkWin(row, col, currentPlayer)) {
+    showWinner(currentPlayer);
+    stopTimer();
+    return;
+  }
+
+  currentPlayer = currentPlayer === 'p1' ? 'p2' : 'p1';
+  updateActivePlayer();
+  stopTimer();
+  selectedCell = null;
+});
+
+document.getElementById('cancel-btn').addEventListener('click', () => {
+  if (selectedCell) selectedCell.classList.remove('selected');
+  selectedCell = null;
+});
+
+function startTimer(player) {
+  stopTimer();
+  document.getElementById(`start-${player}`).classList.add('active');
+  updateActivePlayer();
+  timerInterval = setInterval(() => {
+    timers[player]--;
+    if (timers[player] <= 0) {
+      clearInterval(timerInterval);
+      showWinner(currentPlayer === 'p1' ? 'p2' : 'p1');
+    }
+    updateTimers();
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('start-p1').classList.remove('active');
+  document.getElementById('start-p2').classList.remove('active');
+}
+
+function updateActivePlayer() {
+  document.getElementById('player1-header').classList.toggle('active', currentPlayer === 'p1');
+  document.getElementById('player2-header').classList.toggle('active', currentPlayer === 'p2');
+}
+
+function updateTimers() {
+  document.getElementById('p1-timer').textContent = formatTime(timers.p1);
+  document.getElementById('p2-timer').textContent = formatTime(timers.p2);
+}
+
+function formatTime(seconds) {
+  const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+document.getElementById('start-p1').addEventListener('click', () => startTimer('p1'));
+document.getElementById('stop-p1').addEventListener('click', () => stopTimer());
+document.getElementById('start-p2').addEventListener('click', () => startTimer('p2'));
+document.getElementById('stop-p2').addEventListener('click', () => stopTimer());
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  gameState.forEach(row => row.fill(null));
+  p1Count = 0;
+  p2Count = 0;
+  document.getElementById('p1-count').textContent = p1Count;
+  document.getElementById('p2-count').textContent = p2Count;
+  timers.p1 = 30 * 60;
+  timers.p2 = 30 * 60;
+  updateTimers();
+  currentPlayer = 'p1';
+  updateActivePlayer();
+  stopTimer();
+  selectedCell = null;
+  initializeCrests();
+  buildGrid();
+  overlay.style.display = 'none';
+});
+
+updateTimers();
+updateActivePlayer();
+
+function checkWin(row, col, player) {
+  if (gameState[row].every(cell => cell === player)) return true;
+  if (gameState.every(r => r[col] === player)) return true;
+  if (row === col && gameState.every((r, idx) => r[idx] === player)) return true;
+  if (row + col === 7 && gameState.every((r, idx) => r[7 - idx] === player)) return true;
+  return false;
+}
+
+function showWinner(player) {
+  overlay.textContent = `🎉 ${player === 'p1' ? 'Player 1 (Blue)' : 'Player 2 (Green)'} wins! 🎉`;
+  overlay.style.display = 'flex';
+}
+</script>
+</body>
+</html>
