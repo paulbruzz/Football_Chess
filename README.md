@@ -29,9 +29,7 @@ A fun and strategic web app game that blends football club/national team knowled
      - ❌ **Red Cross**: Wrong guess, cell remains empty and turn passes to opponent.
      - ➖ **Gray Dash**: Cell is known to have no valid player (neutral).
 3. Each player has **30 minutes** total to play (countdown timer).
-4. National team crests appear **only** in the first row, with **1 to 3 max** national teams.
-5. Columns contain **only club crests**.
-6. After confirming:
+4. After confirming:
    - Cell is locked and colored with the player’s color.
    - Turn passes to the opponent.
 
